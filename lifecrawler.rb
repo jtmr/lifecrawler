@@ -7,8 +7,6 @@ sleep_sec = 5
 agent = Mechanize.new
 page = agent.get('http://www.tbsradio.jp/life/themearchive.html')
 
-# $stdout = File.open('log.txt', 'w')
-
 page.search('h5>a').each do |themes_link|
   theme_dir = themes_link.text.gsub('/', '_')
   FileUtils.mkdir(theme_dir) unless Dir.exist?(theme_dir)
@@ -49,10 +47,10 @@ page.search('h5>a').each do |themes_link|
       download_sec = Time.now - start_time
       puts 'ダウンロード完了: ' + title
       puts "経過秒数: #{download_sec}秒"
-    end
     
-    puts "待機: #{sleep_sec}秒"
-    sleep sleep_sec
+      puts "待機: #{sleep_sec}秒"
+      sleep sleep_sec
+    end
   end
 
   puts "待機: #{sleep_sec}秒"
@@ -60,4 +58,3 @@ page.search('h5>a').each do |themes_link|
   puts
 end
 
-# $stdout.close
