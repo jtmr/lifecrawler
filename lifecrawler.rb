@@ -11,12 +11,12 @@ page.search('h5>a').each do |themes_link|
   theme_dir = themes_link.text.gsub('/', '_')
   FileUtils.mkdir(theme_dir) unless Dir.exist?(theme_dir)
   puts 'テーマ: ' + theme_dir
-  
+
   current_theme = themes_link.attr('href')
   theme = agent.get(current_theme)
 
   theme.search('div.entry').each do |entry|
-    title = entry.search('h3').text
+    title = entry.search('h3').text.gsub('/', '_')
     url = ''
     entry.search('div.entry-body a').each do |link|
       if link.attr('href') =~ /mp3$/
@@ -29,6 +29,7 @@ page.search('h5>a').each do |themes_link|
     # download mp3
     puts '次のパートをダウンロード: ' + title
     hc = HTTPClient.new
+    hc.receive_timeout = 3000
     local_mp3 = File.join(theme_dir, title + '.mp3')
     start_time = Time.now
     
@@ -39,9 +40,13 @@ page.search('h5>a').each do |themes_link|
     if File.exist?(local_mp3) and local_length == content_length then
       puts 'ダウンロード済: ' + title
     else
-      File.open(local_mp3, 'w+b:BINARY') do |file|
-        hc.get_content(url) do |chunk|
-          file << chunk
+      File.open(local_mp3, 'w+b') do |file|
+        begin 
+          hc.get_content(url) do |chunk|
+            file << chunk
+          end
+        rescue HTTPClient::BadResponseError
+          nil
         end
       end
       download_sec = Time.now - start_time
